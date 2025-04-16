@@ -12,7 +12,7 @@ const itemRouter = require("./Routes/ItemRoute");
 app.use(express.json());
 app.use(cors()); // You can restrict origins here if needed
 
-// Health check route
+// Health check route//
 app.get("/", (req, res) => {
   res.send("Home Inventory API is running!");
 });
