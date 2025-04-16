@@ -10,22 +10,65 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Log in to DockerHub
-      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-    # ---------- USER SERVICE ----------
-    - name: Build user-service Docker image
-      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/user-service ./user-service
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-    - name: Push user-service image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/user-service
+      # ---------- SNYK: Scan user-service ----------
+      - name: Snyk scan for user-service
+        run: |
+          npm install -g snyk
+          cd user-service
+          snyk test --severity-threshold=high || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-    # ---------- INVENTORY SERVICE ----------
-    - name: Build inventory-service Docker image
-      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service ./inventory-service
+      # ---------- SNYK: Scan inventory-service ----------
+      - name: Snyk scan for inventory-service
+        run: |
+          npm install -g snyk
+          cd inventory-service
+          snyk test --severity-threshold=high || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-    - name: Push inventory-service image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service
+      # ---------- SONARCLOUD: Scan user-service ----------
+      - name: SonarCloud scan for user-service
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: user-service
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: jeewantha-de-silva
+          SONAR_ORGANIZATION: Jeewantha_De_Silva
+
+      # ---------- SONARCLOUD: Scan inventory-service ----------
+      - name: SonarCloud scan for inventory-service
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: inventory-service
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: jeewantha-de-silva
+          SONAR_ORGANIZATION: Jeewantha_De_Silva
+
+      # ---------- Build and Push user-service ----------
+      - name: Build user-service Docker image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/user-service ./user-service
+
+      - name: Push user-service image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/user-service
+
+      # ---------- Build and Push inventory-service ----------
+      - name: Build inventory-service Docker image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service ./inventory-service
+
+      - name: Push inventory-service image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service
