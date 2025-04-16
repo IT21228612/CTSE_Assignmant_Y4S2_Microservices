@@ -1,44 +1,59 @@
-require("dotenv").config();
+const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const cors = require('cors');
+const authRoutes = require('./Routes/userRoutes');
 
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+dotenv.config(); // Load env vars
+
 const app = express();
 
-// Routers
-const itemRouter = require("./Routes/ItemRoute");
-
 // Middleware
+app.use(cors());
 app.use(express.json());
-app.use(cors()); // You can restrict origins here if needed
 
 // Health check route
-app.get("/", (req, res) => {
-  res.send("Home Inventory API is running!");
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', time: new Date().toISOString() });
 });
 
-// API Routes
-app.use("/api/items", itemRouter); // Example: http://localhost:5000/api/items
+// Mount routes
+app.use('/api/auth', authRoutes);
 
-// Configuration
-const PORT = process.env.PORT ;
-const MONGO_URL =process.env.MONGO_URL ; // Add DB name if not set
-const DEV_MODE = process.env.DEV_MODE || "development";
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.stack || err);
+  res.status(500).json({
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error',
+  });
+});
 
-// Optional: enable strictQuery mode
-mongoose.set("strictQuery", true);
+// Database connection & server start
+const PORT = process.env.PORT || 5000;
 
-// MongoDB Connection
-mongoose
-  .connect(MONGO_URL)
-  .then(() => {
-    console.log("✅ Connected to MongoDB");
+(async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('✅ MongoDB connected');
 
     app.listen(PORT, () => {
-      console.log(`Server running in ${DEV_MODE} mode on port ${PORT}`);
+      console.log(`🚀 Server is running on port ${PORT}`);
     });
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection failed:", err);
-    process.exit(1); // Exit app on DB connection failure
+  } catch (err) {
+    console.error('❌ MongoDB connection failed:', err.message);
+    process.exit(1);
+  }
+})();
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('🛑 Gracefully shutting down...');
+  mongoose.connection.close(() => {
+    console.log('🔌 MongoDB connection closed');
+    process.exit(0);
   });
+});
