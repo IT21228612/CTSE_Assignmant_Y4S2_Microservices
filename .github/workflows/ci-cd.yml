@@ -1,1 +1,31 @@
-v
+name: CI/CD for Microservices
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to DockerHub
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+    # ---------- USER SERVICE ----------
+    - name: Build user-service Docker image
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/user-service ./user-service
+
+    - name: Push user-service image
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/user-service
+
+    # ---------- INVENTORY SERVICE ----------
+    - name: Build inventory-service Docker image
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service ./inventory-service
+
+    - name: Push inventory-service image
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service
