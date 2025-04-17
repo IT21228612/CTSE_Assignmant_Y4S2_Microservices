@@ -1,0 +1,15 @@
+version: '3'
+services:
+  user-service:
+    build: ./user-service
+    ports:
+      - "5000:5000"  # Host:Container
+    env_file:
+      - ./user-service/.env
+
+  inventory-service:
+    build: ./inventory-service
+    ports:
+      - "5001:5000"  # Host 5001 maps to container 5000
+    env_file:
+      - ./inventory-service/.env
