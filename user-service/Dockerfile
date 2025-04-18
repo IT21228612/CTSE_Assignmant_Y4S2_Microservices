@@ -23,5 +23,5 @@ ENV DEV_MODE=${DEV_MODE}
 # 6. Expose the container port
 EXPOSE 5000
 
-# 7. Run the application
+# 7. Run the Application
 CMD ["node", "src/app.js"]
