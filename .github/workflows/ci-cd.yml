@@ -13,6 +13,9 @@ jobs:
       PORT: ${{ secrets.PORT }}
       MONGO_URL: ${{ secrets.MONGO_URL }}
       DEV_MODE: ${{ secrets.DEV_MODE }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}  # Make sure you store AWS region in GitHub secrets
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Your AWS access key
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Your AWS secret key
 
     steps:
       - name: Checkout code
@@ -22,9 +25,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
-      - name: Log in to DockerHub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
       # ---------- SNYK: Scan user-service ----------
       - name: Snyk scan for user-service
@@ -64,26 +64,36 @@ jobs:
           SONAR_PROJECT_KEY: IT21228612_CTSE_Assignmant_Y4S2_Microservices
           SONAR_ORGANIZATION: jeewantha-de-silva
 
-      # ---------- Build and Push user-service ----------
+      # ---------- Authenticate to AWS ECR ----------
+      - name: Authenticate to AWS ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      
+      # ---------- Build and Push user-service to ECR ----------
       - name: Build user-service Docker image
         run: |
           docker build \
             --build-arg PORT=$PORT \
             --build-arg MONGO_URL=$MONGO_URL \
             --build-arg DEV_MODE=$DEV_MODE \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/user-service ./user-service
+            -t 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/user-service:latest ./user-service
 
-      - name: Push user-service image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/user-service
+      - name: Push user-service image to ECR
+        run: |
+          docker push 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/user-service:latest
 
-      # ---------- Build and Push inventory-service ----------
+      # ---------- Build and Push inventory-service to ECR ----------
       - name: Build inventory-service Docker image
         run: |
           docker build \
             --build-arg PORT=$PORT \
             --build-arg MONGO_URL=$MONGO_URL \
             --build-arg DEV_MODE=$DEV_MODE \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service ./inventory-service
+            -t 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/inventory-service:latest ./inventory-service
 
-      - name: Push inventory-service image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service
+      - name: Push inventory-service image to ECR
+        run: |
+          docker push 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/inventory-service:latest
