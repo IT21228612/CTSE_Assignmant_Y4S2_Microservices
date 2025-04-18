@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema({
   address: { type: String, default: '' },
   category: { type: String, enum: ['Home', 'Shop'], required: true },
   password: { type: String, required: true },
+  
+  // Add OTP and OTP expiration fields
+  otp: { type: String, default: '' },  // This will store the OTP
+  otpExpiration: { type: Date },  // This will store the expiration time of OTP
 }, {
   timestamps: true,
 });
