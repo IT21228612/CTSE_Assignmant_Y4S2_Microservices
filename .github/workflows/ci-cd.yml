@@ -73,7 +73,7 @@ jobs:
 
       # ---------- Build and Push inventory-service ----------
       - name: Build inventory-service Docker image
-        run: docker build --build-arg PORT=5000 --build-arg MONGO_URL=xx --build-arg DEV_MODE=dev -t ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service ./inventory-service .
+        run: docker build --build-arg PORT=5000 --build-arg MONGO_URL=xx --build-arg DEV_MODE=dev -t ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service ./inventory-service
 
       - name: Push inventory-service image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service
