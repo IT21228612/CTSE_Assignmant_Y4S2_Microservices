@@ -60,25 +60,26 @@ jobs:
           SONAR_ORGANIZATION: jeewantha-de-silva
 
       # ---------- Build and Push user-service ----------
+      - name: Set up Docker Buildx
+        run: |
+          docker run --privileged --rm tonistiigi/binfmt --install all
+          docker buildx create --use
+
       - name: Build user-service Docker image
         run: |
-          docker build \
+          docker buildx build \
             --build-arg PORT=${{ secrets.PORT }} \
             --build-arg MONGO_URL=${{ secrets.MONGO_URL }} \
             --build-arg DEV_MODE=${{ secrets.DEV_MODE }} \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/user-service ./user-service
-
-      - name: Push user-service image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/user-service
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/user-service ./user-service \
+            --push
 
       # ---------- Build and Push inventory-service ----------
       - name: Build inventory-service Docker image
         run: |
-          docker build \
+          docker buildx build \
             --build-arg PORT=${{ secrets.PORT }} \
             --build-arg MONGO_URL=${{ secrets.MONGO_URL }} \
             --build-arg DEV_MODE=${{ secrets.DEV_MODE }} \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service ./inventory-service
-
-      - name: Push inventory-service image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service ./inventory-service \
+            --push
