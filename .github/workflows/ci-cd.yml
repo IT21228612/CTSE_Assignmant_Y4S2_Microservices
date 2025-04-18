@@ -66,15 +66,14 @@ jobs:
 
       # ---------- Build and Push user-service ----------
       - name: Build user-service Docker image
-        run: docker build --build-arg PORT=5000 --build-arg MONGO_URL=xx --build-arg DEV_MODE=drv -t ${{ secrets.DOCKERHUB_USERNAME }}/user-service ./user-service
+        run: docker build --build-arg PORT=${{ secrets.PORT }} --build-arg MONGO_URL=${{ secrets.MONGO_URL }} --build-arg DEV_MODE=${{ secrets.DEV_MODE }} -t ${{ secrets.DOCKERHUB_USERNAME }}/user-service ./user-service
 
       - name: Push user-service image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/user-service
 
       # ---------- Build and Push inventory-service ----------
       - name: Build inventory-service Docker image
-        run: |
-          docker build --build-arg PORT=${{ secrets.PORT }} --build-arg MONGO_URL=${{ secrets.MONGO_URL }} --build-arg DEV_MODE=${{ secrets.DEV_MODE }} -t ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service ./inventory-service .
+        run: docker build --build-arg PORT=${{ secrets.PORT }} --build-arg MONGO_URL=${{ secrets.MONGO_URL }} --build-arg DEV_MODE=${{ secrets.DEV_MODE }} -t ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service ./inventory-service
 
       - name: Push inventory-service image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/inventory-service
