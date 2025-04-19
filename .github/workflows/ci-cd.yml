@@ -86,6 +86,8 @@ jobs:
             --build-arg DEV_MODE=$DEV_MODE \
             --build-arg JWT_SECRET=$JWT_SECRET \
             --build-arg EMAIL_USER=$EMAIL_USER \
+            --build-arg EMAIL_PASS="${EMAIL_PASS}" \
+            --build-arg FRONTEND_URL=$FRONTEND_URL \
             -t 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/ctse/user-service:latest ./user-service
 
       - name: Push user-service image to ECR
