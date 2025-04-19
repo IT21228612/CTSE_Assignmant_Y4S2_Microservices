@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
 app.use("/api/items", itemRouter); // Example: http://localhost:5000/api/items
 
 // Configuration
-const PORT = process.env.PORT ;
+const PORT = process.env.PORT2 ;
 const MONGO_URL =process.env.MONGO_URL ; // Add DB name if not set
 const DEV_MODE = process.env.DEV_MODE || "development";
 

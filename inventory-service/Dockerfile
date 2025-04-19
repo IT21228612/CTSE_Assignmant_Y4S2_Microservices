@@ -12,16 +12,16 @@ RUN npm install
 COPY . .
 
 # 5. Set environment variables via build-time args
-ARG PORT
+ARG PORT2
 ARG MONGO_URL
 ARG DEV_MODE
 
-ENV PORT=${PORT}
+ENV PORT2=${PORT2}
 ENV MONGO_URL=${MONGO_URL}
 ENV DEV_MODE=${DEV_MODE}
 
 # 6. Expose the container port
-EXPOSE 5000
+EXPOSE 5001
 
 # 7. Run the application
 CMD ["node", "src/app.js"]

@@ -11,6 +11,7 @@ jobs:
 
     env:
       PORT: ${{ secrets.PORT }}
+      PORT2: ${{ secrets.PORT2 }}
       MONGO_URL: ${{ secrets.MONGO_URL }}
       DEV_MODE: ${{ secrets.DEV_MODE }}
       AWS_REGION: ${{ secrets.AWS_REGION }} # Make sure you store AWS region in GitHub secrets
@@ -89,7 +90,7 @@ jobs:
       - name: Build inventory-service Docker image
         run: |
           docker build \
-            --build-arg PORT=$PORT \
+            --build-arg PORT=$PORT2 \
             --build-arg MONGO_URL=$MONGO_URL \
             --build-arg DEV_MODE=$DEV_MODE \
             -t 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/ctse/inventory-service:latest ./inventory-service
