@@ -84,7 +84,7 @@ jobs:
             --build-arg PORT=$PORT \
             --build-arg MONGO_URL=$MONGO_URL \
             --build-arg DEV_MODE=$DEV_MODE \
-            --build-arg JWT_SECRET=$JWT_SECRET \
+            --build-arg JWT_SECRET=123456 \
             --build-arg EMAIL_USER=$EMAIL_USER \
             --build-arg EMAIL_PASS=$EMAIL_PASS \
             --build-arg FRONTEND_URL=$FRONTEND_URL \
