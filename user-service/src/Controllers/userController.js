@@ -77,15 +77,28 @@ const forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // Check if required fields are missing
+    if (!user.firstName || !user.lastName || !user.category) {
+      return res.status(400).json({
+        message: 'Missing required fields: firstName, lastName, category',
+      });
+    }
+
     // Generate OTP
     const otp = generateOTP();
 
-    // Store OTP and expiration time in the user document (expires in 10 minutes)
-    user.otp = otp;
-    user.otpExpiration = Date.now() + 10 * 60 * 1000;  // OTP expires in 10 minutes
-    await user.save();
+    // Update OTP and expiration without triggering validation errors
+    await User.updateOne(
+      { email },
+      {
+        $set: {
+          otp,
+          otpExpiration: Date.now() + 10 * 60 * 1000,  // OTP expires in 10 minutes
+        }
+      }
+    );
 
-    // Create Nodemailer transporter
+    // Nodemailer setup
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -97,19 +110,33 @@ const forgotPassword = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Password Reset OTP',
-      text: `Your OTP to reset your password is: ${otp}. It will expire in 10 minutes.`,
+      subject: 'Password Reset OTP - CTSE Inventory System',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+          <h2 style="color: #0a5fff; text-align: center;">CTSE Inventory System</h2>
+          <p>Hello,</p>
+          <p>You requested to reset your password. Please use the OTP below to proceed:</p>
+          <p style="font-size: 20px; font-weight: bold; text-align: center; margin: 20px 0; color: #333;">
+            ${otp}
+          </p>
+          <p>This OTP will expire in <strong>10 minutes</strong>. If you didn’t request this, you can safely ignore this email.</p>
+          <br/>
+          <p style="font-size: 14px; color: #888;">Thanks,<br/>CTSE Inventory Team</p>
+        </div>
+      `
     };
+    
 
     // Send the OTP to the user's email
     await transporter.sendMail(mailOptions);
 
     res.status(200).json({ message: 'OTP sent to email if user exists' });
-  } catch (err) {
-    console.error('Forgot password error:', err);
-    res.status(500).json({ message: 'Server error during password reset' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Error resetting password' });
   }
 };
+
 
 // VERIFY OTP
 const verifyOTP = async (req, res) => {
