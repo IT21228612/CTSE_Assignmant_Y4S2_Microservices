@@ -104,7 +104,7 @@ jobs:
         run: |
           docker push 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/ctse/inventory-service:latest
 
-      # ---------- Force ECS redeploy: user-service ----------
+      # ---------- Force ECS redeploy: user-service -----------
       - name: Force ECS redeployment for user-service
         run: |
           aws ecs update-service \
@@ -112,7 +112,7 @@ jobs:
             --service userService2 \
             --force-new-deployment
 
-      # ---------- Force ECS redeploy: inventory-service ----------
+      # ---------- Force ECS redeploy: inventory-service -----------
       - name: Force ECS redeployment for inventory-service
         run: |
           aws ecs update-service \
