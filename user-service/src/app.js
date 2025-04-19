@@ -25,7 +25,7 @@ app.use((err, req, res, next) => {
   console.error('Unhandled error:', err.stack || err);
   res.status(500).json({
     message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error',
+    error: process.env.DEV_MODE === 'development' ? err.message : 'Internal Server Error',
   });
 });
 
@@ -34,7 +34,7 @@ const PORT = process.env.PORT || 5000;
 
 (async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
+    await mongoose.connect(process.env.MONGO_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
@@ -45,6 +45,7 @@ const PORT = process.env.PORT || 5000;
     });
   } catch (err) {
     console.error('❌ MongoDB connection failed:', err.message);
+    console.log("Mongo URI:", process.env.MONGO_URL);
     process.exit(1);
   }
 })();
