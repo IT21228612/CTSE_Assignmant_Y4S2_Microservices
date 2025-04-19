@@ -11,16 +11,16 @@ jobs:
 
     env:
       PORT: ${{ secrets.PORT }}
-      PORT2: ${{ secrets.PORT2 }}
+      PORT2: ${{ secrets.PORT2 }} #port2 is for inventory service
       MONGO_URL: ${{ secrets.MONGO_URL }}
       DEV_MODE: ${{ secrets.DEV_MODE }}
+      AWS_REGION: ${{ secrets.AWS_REGION }} # Make sure you store AWS region in GitHub secrets
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # Your AWS access key
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # Your AWS secret key
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       EMAIL_USER: ${{ secrets.EMAIL_USER }}
       EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
       FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
       - name: Checkout code
