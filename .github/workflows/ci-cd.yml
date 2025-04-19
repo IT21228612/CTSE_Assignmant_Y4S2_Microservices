@@ -6,17 +6,17 @@ on:
       - main
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     env:
       PORT: ${{ secrets.PORT }}
-      PORT2: ${{ secrets.PORT2 }} #port2 is for inventory service
+      PORT2: ${{ secrets.PORT2 }} # port2 is for inventory service
       MONGO_URL: ${{ secrets.MONGO_URL }}
       DEV_MODE: ${{ secrets.DEV_MODE }}
-      AWS_REGION: ${{ secrets.AWS_REGION }} # Make sure you store AWS region in GitHub secrets
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # Your AWS access key
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # Your AWS secret key
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       EMAIL_USER: ${{ secrets.EMAIL_USER }}
       EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
@@ -73,9 +73,6 @@ jobs:
       - name: Authenticate to AWS ECR
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       # ---------- Build and Push user-service to ECR ----------
       - name: Build user-service Docker image
@@ -106,3 +103,19 @@ jobs:
       - name: Push inventory-service image to ECR
         run: |
           docker push 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/ctse/inventory-service:latest
+
+      # ---------- Force ECS redeploy: user-service ----------
+      - name: Force ECS redeployment for user-service
+        run: |
+          aws ecs update-service \
+            --cluster CTSE_cluster2 \
+            --service userService2 \
+            --force-new-deployment
+
+      # ---------- Force ECS redeploy: inventory-service ----------
+      - name: Force ECS redeployment for inventory-service
+        run: |
+          aws ecs update-service \
+            --cluster CTSE_cluster2 \
+            --service inventoryService2 \
+            --force-new-deployment
