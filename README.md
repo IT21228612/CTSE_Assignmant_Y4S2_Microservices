@@ -99,5 +99,20 @@ Managed via **GitHub Actions** (`.github/workflows/ci-cd.yml`):
 
 ---
 
+## 🧪 Technologies Used
+
+- **Node.js** & **Express**  
+- **MongoDB Atlas** (Mongoose)  
+- **React**, **Tailwind CSS**, **Bootstrap**  
+- **Docker**, **AWS ECS/ECR**, **Netlify**  
+- **GitHub Actions**, **Snyk**, **SonarCloud**
+
+---
+
 ## 📁 Folder Structure
+![image](https://github.com/user-attachments/assets/ce5a253b-580b-4c38-9f0f-bfb1410e57f8)
+
+
+
+
 
