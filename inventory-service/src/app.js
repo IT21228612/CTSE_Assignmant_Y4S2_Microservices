@@ -41,9 +41,10 @@ mongoose
   .then(() => {
     console.log("✅ Connected to MongoDB");
 
-    const server = app.listen(PORT, () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running in ${DEV_MODE} mode on port ${PORT}`);
     });
+    
 
     server.on("error", (err) => {
       console.error("❌ Server failed to start:", err.message);

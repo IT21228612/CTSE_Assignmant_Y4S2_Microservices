@@ -40,9 +40,10 @@ const PORT = process.env.PORT || 5000;
     });
     console.log('✅ MongoDB connected');
 
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server is running on port ${PORT}`);
     });
+    
   } catch (err) {
     console.error('❌ MongoDB connection failed:', err.message);
     console.log("Mongo URI:", process.env.MONGO_URL);
