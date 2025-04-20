@@ -9,7 +9,7 @@ import Footer from "./inventory/Footer";
 // User - Item Display, Order
 import UserItems from "./inventory/Items";
 
-import UserItemsRport from "./inventory/ItemsReport";
+import UserItemsReport from "./inventory/ItemsReport";
 
 function App() {
     return (
@@ -23,7 +23,7 @@ function App() {
                     <Routes>
                         {/* User - Viewing Items */}
                         <Route path="/inventory" element={<UserItems />} />
-                        <Route path="/inventoryReport" element={<UserItemsRport />} />
+                        <Route path="/inventoryReport" element={<UserItemsReport />} />
                     </Routes>
                 </main>
 
