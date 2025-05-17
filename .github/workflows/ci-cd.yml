@@ -172,8 +172,8 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
           # target production context explicitly if you like:
-          netlify env:set REACT_APP_USER_API_URL http://${{ steps.get-ecs-ips.outputs.userService2_ip }}:5000/api --context production
-          netlify env:set REACT_APP_INV_API_URL  http://${{ steps.get-ecs-ips.outputs.inventoryService2_ip }}:5001/api  --context production
+          netlify env:set REACT_APP_USER_API_URL http://${{ steps.get-ecs-ips.outputs.userService2_ip }}:5000/api 
+          netlify env:set REACT_APP_INV_API_URL  http://${{ steps.get-ecs-ips.outputs.inventoryService2_ip }}:5001/api  
 
       # ---------- Build & Deploy Frontend ----------
       - name: Install frontend dependencies
