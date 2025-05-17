@@ -154,15 +154,26 @@ jobs:
           EOF
 
       # ---------- (Optional) Update Netlify Dashboard ----------
+      # ─── Install Netlify CLI ────────────────────────────────────────────
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
 
+      # ─── Link the current directory to your Netlify site ───────────────
+      - name: Link Netlify site
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          # --id is the correct flag for the 'link' command
+          netlify link --id ${{ secrets.NETLIFY_SITE_ID }}
+
+      # ─── Now set your env vars (no --site or --site-id) ────────────────
       - name: Update Netlify environment variables
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
-           netlify env:set REACT_APP_USER_API_URL http://${{ steps.get-ecs-ips.outputs.userService2_ip }}:5000/api --site-id ${{ secrets.NETLIFY_SITE_ID }}
-           netlify env:set REACT_APP_INV_API_URL http://${{ steps.get-ecs-ips.outputs.inventoryService2_ip }}:5001/api --site-id ${{ secrets.NETLIFY_SITE_ID }}
+          # target production context explicitly if you like:
+          netlify env:set REACT_APP_USER_API_URL http://${{ steps.get-ecs-ips.outputs.userService2_ip }}:5000/api --context production
+          netlify env:set REACT_APP_INV_API_URL  http://${{ steps.get-ecs-ips.outputs.inventoryService2_ip }}:5001/api  --context production
 
       # ---------- Build & Deploy Frontend ----------
       - name: Install frontend dependencies
