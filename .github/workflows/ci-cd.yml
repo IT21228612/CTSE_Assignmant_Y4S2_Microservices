@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: 18
 
-      # ---------- SNYK: Scan user-service ----------
+      # ---------- Security Scans ----------
       - name: Snyk scan for user-service
         run: |
           npm install -g snyk
@@ -40,7 +40,6 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      # ---------- SNYK: Scan inventory-service ----------
       - name: Snyk scan for inventory-service
         run: |
           npm install -g snyk
@@ -49,7 +48,6 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      # ---------- SONARCLOUD: Scan user-service ----------
       - name: SonarCloud scan for user-service
         uses: SonarSource/sonarcloud-github-action@v2
         with:
@@ -59,7 +57,6 @@ jobs:
           SONAR_PROJECT_KEY: IT21228612_CTSE_Assignmant_Y4S2_Microservices
           SONAR_ORGANIZATION: jeewantha-de-silva
 
-      # ---------- SONARCLOUD: Scan inventory-service ----------
       - name: SonarCloud scan for inventory-service
         uses: SonarSource/sonarcloud-github-action@v2
         with:
@@ -69,13 +66,13 @@ jobs:
           SONAR_PROJECT_KEY: IT21228612_CTSE_Assignmant_Y4S2_Microservices
           SONAR_ORGANIZATION: jeewantha-de-silva
 
-      # ---------- Authenticate to AWS ECR ----------
+      # ---------- Docker/ECR ----------
       - name: Authenticate to AWS ECR
         run: |
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com
+          aws ecr get-login-password --region $AWS_REGION \
+            | docker login --username AWS --password-stdin 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      # ---------- Build and Push user-service to ECR ----------
-      - name: Build user-service Docker image
+      - name: Build & Push user-service image
         run: |
           docker build \
             --build-arg PORT=$PORT \
@@ -86,25 +83,18 @@ jobs:
             --build-arg EMAIL_PASS="${EMAIL_PASS}" \
             --build-arg FRONTEND_URL=$FRONTEND_URL \
             -t 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/ctse/user-service:latest ./user-service
-
-      - name: Push user-service image to ECR
-        run: |
           docker push 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/ctse/user-service:latest
 
-      # ---------- Build and Push inventory-service to ECR ----------
-      - name: Build inventory-service Docker image
+      - name: Build & Push inventory-service image
         run: |
           docker build \
             --build-arg PORT=$PORT2 \
             --build-arg MONGO_URL=$MONGO_URL \
             --build-arg DEV_MODE=$DEV_MODE \
             -t 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/ctse/inventory-service:latest ./inventory-service
-
-      - name: Push inventory-service image to ECR
-        run: |
           docker push 730615659624.dkr.ecr.$AWS_REGION.amazonaws.com/ctse/inventory-service:latest
 
-      # ---------- Force ECS redeploy: user-service -----------
+      # ---------- Force ECS Redeploy ----------
       - name: Force ECS redeployment for user-service
         run: |
           aws ecs update-service \
@@ -112,7 +102,6 @@ jobs:
             --service userService2 \
             --force-new-deployment
 
-      # ---------- Force ECS redeploy: inventory-service -----------
       - name: Force ECS redeployment for inventory-service
         run: |
           aws ecs update-service \
@@ -120,7 +109,52 @@ jobs:
             --service inventoryService2 \
             --force-new-deployment
 
-      # ---------- Build and Deploy React frontend to Netlify ----------
+      # ---------- Fetch new public IPs ----------
+      - name: Fetch public IPs of ECS tasks
+        id: get-ecs-ips
+        run: |
+          get_public_ip() {
+            SERVICE=$1
+            CLUSTER=CTSE_cluster2
+
+            # 1) grab the first running task ARN
+            TASK_ARN=$(aws ecs list-tasks \
+              --cluster $CLUSTER \
+              --service-name $SERVICE \
+              --query 'taskArns[0]' \
+              --output text)
+
+            # 2) find its ENI
+            ENI_ID=$(aws ecs describe-tasks \
+              --cluster $CLUSTER \
+              --tasks $TASK_ARN \
+              --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
+              --output text)
+
+            # 3) lookup the public IP on that ENI
+            PUBLIC_IP=$(aws ec2 describe-network-interfaces \
+              --network-interface-ids $ENI_ID \
+              --query 'NetworkInterfaces[0].Association.PublicIp' \
+              --output text)
+
+            echo "$SERVICE IP: $PUBLIC_IP"
+            echo "::set-output name=${SERVICE}_ip::$PUBLIC_IP"
+          }
+
+          get_public_ip userService2
+          get_public_ip inventoryService2
+
+      # ---------- Inject these IPs into your React .env ----------
+      - name: Inject ECS IPs into frontend .env
+        run: |
+          cd frontend
+          cat <<EOF > .env.production
+          REACT_APP_USER_API_URL=http://${{ steps.get-ecs-ips.outputs.userService2_ip }}:5000/api
+          REACT_APP_INV_API_URL=http://${{ steps.get-ecs-ips.outputs.inventoryService2_ip }}:5001/api
+          EOF
+
+     
+      # ---------- Build & Deploy Frontend ----------
       - name: Install frontend dependencies
         run: |
           cd frontend
