@@ -161,8 +161,8 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
-          netlify env:set REACT_APP_USER_API_URL http://${{ steps.get-ecs-ips.outputs.userService2_ip }}:5000/api --site ${{ secrets.NETLIFY_SITE_ID }}
-          netlify env:set REACT_APP_INV_API_URL http://${{ steps.get-ecs-ips.outputs.inventoryService2_ip }}:5001/api --site ${{ secrets.NETLIFY_SITE_ID }}
+           netlify env:set REACT_APP_USER_API_URL http://${{ steps.get-ecs-ips.outputs.userService2_ip }}:5000/api --site-id ${{ secrets.NETLIFY_SITE_ID }}
+           netlify env:set REACT_APP_INV_API_URL http://${{ steps.get-ecs-ips.outputs.inventoryService2_ip }}:5001/api --site-id ${{ secrets.NETLIFY_SITE_ID }}
 
       # ---------- Build & Deploy Frontend ----------
       - name: Install frontend dependencies
