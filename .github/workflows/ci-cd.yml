@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: 18
 
-      # ---------- Security Scans ----------
+      # ---------- Security Scans ---------------
       - name: Snyk scan for user-service
         run: |
           npm install -g snyk
